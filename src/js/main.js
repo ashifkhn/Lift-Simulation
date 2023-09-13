@@ -7,7 +7,6 @@ const state = {
   lifts: [],
 };
 
-
 const floorContainer = document.querySelector(".floor-container");
 const liftContainer = document.querySelector(".lift-container");
 
@@ -32,13 +31,6 @@ form.onsubmit = (e) => {
     return;
   }
 
-  // Check if the number of lifts is not greater than the number of floors
-  if (numLifts > numFloors) {
-    alert("Number of lifts cannot be greater than the number of floors.");
-    return;
-  }
-
-  // Check if the device is desktop
   const isDesktopDevice = window.innerWidth > 768;
   const maxLifts = isDesktopDevice ? 8 : 6;
 
@@ -65,43 +57,57 @@ function render() {
   for (let index = 0; index < state.noOfFloors; index++) {
     let floor = document.createElement("div");
     floor.classList.add("floor-divider");
-    floor_heading = document.createElement("h4");
+    let floor_heading = document.createElement("h4");
     floor_heading.innerText = `Floor ${index + 1}`;
-    const liftLeftPosition = (index + 1) * 10; 
+
     
     // Call button for going up
-    floor_button_up = document.createElement("button");
+    let floor_button_up = document.createElement("button");
     floor_button_up.innerText = `Up`;
     floor_button_up.onclick = () => {
       callLift(index + 1);
     };
-    
+
     // Call button for going down
-    floor_button_down = document.createElement("button");
+    let floor_button_down = document.createElement("button");
     floor_button_down.innerText = `Down`;
     floor_button_down.onclick = () => {
       callLift(index + 1);
     };
-    
+
     floor.append(floor_heading, floor_button_up, floor_button_down);
     floor.style.height = `${state.heightOfEachFloor + 5}px`;
     floorContainer.append(floor);
   }
 
-  for (let index = 0; index < state.noOfLifts; index++) {
-    let lift = document.createElement("div");
-     const liftLeftPosition = (index + 1) * 12;
-    lift.classList.add("lift");
-    let lift_state = { id: index, state: "free" };
-    lift.classList.add(`lift-${lift_state.id}`);
-    state.lifts.push(lift_state);
+ for (let index = 0; index < state.noOfLifts; index++) {
+  let lift = document.createElement("div");
+  const liftLeftPosition = (index + 1) * 12;
+  lift.classList.add("lift");
+  let lift_state = { id: index, state: "free", currentFloor: 1 };
+  lift.classList.add(`lift-${lift_state.id}`);
+  state.lifts.push(lift_state);
 
-    lift.setAttribute("data-id", lift_state.id);
-    lift.setAttribute("data-state", lift_state.state);
+  lift.setAttribute("data-id", lift_state.id);
+  lift.setAttribute("data-state", lift_state.state);
 
-    lift.style.left = `${liftLeftPosition}%`;
-    liftContainer.append(lift);
-  }
+  lift.style.left = `${liftLeftPosition}%`;
+  
+  // Create the first span element
+  let span1 = document.createElement("span");
+  span1.classList.add("left-door");
+  // span1.innerText = "Span 1 Text"; // You can set the text as needed
+  lift.appendChild(span1);
+
+  // Create the second span element
+  let span2 = document.createElement("span");
+  span2.classList.add("right-door");
+
+  // span2.innerText = "Span 2 Text"; // You can set the text as needed
+  lift.appendChild(span2);
+
+  liftContainer.append(lift);
+}
 }
 
 function callLift(floor, isGoingDown = false) {
@@ -110,57 +116,51 @@ function callLift(floor, isGoingDown = false) {
   if (availableLift) {
     // Mark the lift as occupied
     availableLift.state = "occupied";
+    const previousFloor = availableLift.currentFloor
+    availableLift.currentFloor = floor; // Set the current floor
+
     const liftElement = document.querySelector(`.lift-${availableLift.id}`);
-    liftElement.setAttribute("data-state", availableLift.state);
 
     // Determine direction and target floor
+    const floorDifference = Math.abs(floor - previousFloor)
     const targetFloorPosition = (floor - 1) * state.heightOfEachFloor + 30;
     const transitionDuration = isGoingDown
-      ? `${2 * Math.abs(floor - 1)}s`
-      : `${2 * floor}s`;
+      ? `${2 * floorDifference + 1}s`
+      : `${2 * floorDifference + 1}s`;
 
     // Move the lift to the target floor
     liftElement.style.transitionDuration = transitionDuration;
     liftElement.style.bottom = `${targetFloorPosition}px`;
-
+console.log(transitionDuration, floor - 1, floor)
     // Wait for the lift to reach the target floor
+
+    const doorOpenTimeout = parseInt(transitionDuration) * 1000
+
     setTimeout(() => {
       liftElement.classList.add("door-open");
+    }, doorOpenTimeout);
+    setTimeout(() => {
+      console.log(1, "dusra")
+      liftElement.classList.remove("door-open");
+  
+},
+doorOpenTimeout + 1000);
+    setTimeout(() => {
+      availableLift.state = "free";
 
-      // Show the door animation for 2.5 seconds
-      setTimeout(() => {
-        liftElement.classList.remove("door-open");
-
-        // Wait for the door animation to finish
-        setTimeout(() => {
-          liftElement.classList.add("door-close");
-          setTimeout(() => {
-            liftElement.classList.remove("door-close");
-            availableLift.state = "free";
-            liftElement.setAttribute("data-state", availableLift.state);
-
-            // Check if there are pending requests
-            if (state.requests.length > 0) {
-              // Get the next requested floor from the queue
-              const nextRequest = state.requests.shift();
-              // Call the lift to the next requested floor
-              callLift(nextRequest.floor, nextRequest.isGoingDown);
-            }
-          }, 2500);
-        }, 2500);
-      }, 2500);
-    }, parseInt(transitionDuration) * 1000);
+      // Check if there are pending requests
+      if (state.requests.length > 0) {
+        // Get the next requested floor from the queue
+        const nextRequest = state.requests.shift();
+        // Call the lift to the next requested floor
+        callLift(nextRequest.floor, nextRequest.isGoingDown);
+      }
+    }, doorOpenTimeout + 2000);
   } else {
     // If all lifts are busy, add the request to the queue
     state.requests.push({ floor, isGoingDown });
   }
+  console.log(state)
 }
-
-initializeSimulation();
-
-
-
-
-
 
 initializeSimulation();

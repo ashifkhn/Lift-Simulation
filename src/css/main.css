@@ -58,15 +58,61 @@
   animation-duration: 2.5s;
   animation-timing-function: ease;
   animation-fill-mode: forwards;
+  display: flex;
+  margin: 2px;
 }
 
-.door-open {
-  animation-name: doorOpen;
+.lift>span{
+  background-color: aqua;
+  width: 30px;
+  height: 60px;
+  transition: 2s ease;
 }
 
-.door-close {
+.left-door {
+  /* Your styles for the first child span here */
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  /* Add any other styles you need */
+}
+
+.right-door {
+  /* Your styles for the first child span here */
+
+    border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  /* Add any other styles you need */
+}
+
+
+
+
+
+
+
+
+.door-open{
+  gap: 50px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  background-color: #715050;
+  border-radius: 8px;
+  /* transition: bottom 3s ease; */
+  /* animation-duration: 2.5s; */
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+  display: flex;
+  margin: 2px;
+  transition: 2s ease;
+}
+
+/* .door-close {
   animation-name: doorClose;
-}
+} */
 
 @keyframes doorOpen {
   0% {
